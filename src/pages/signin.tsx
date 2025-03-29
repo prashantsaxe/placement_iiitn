@@ -1,28 +1,37 @@
 import { useState } from "react";
-import { useRouter } from "next/router";
 
 export default function SignIn() {
-  const [email, setEmail] = useState("");
-  const [error, setError] = useState("");
-  const router = useRouter();
+  const [email, setEmail] = useState<string>("");
+  const [message, setMessage] = useState<string>("");
 
-  const handleSignIn = async () => {
-    const res = await fetch(`/api/auth/magic-link?email=${email}`, { method: "POST" });
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setMessage("Sending magic link...");
+
+    const res = await fetch("/api/auth/magic-link", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+
     const data = await res.json();
-
-    if (data.success) {
-      router.push(data.redirect); // Redirect to dashboard after login
-    } else {
-      setError(data.error || "Failed to sign in");
-    }
+    setMessage(data.message || data.error);
   };
 
   return (
     <div>
       <h1>Sign In</h1>
-      <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter email" />
-      <button onClick={handleSignIn}>Sign In</button>
-      {error && <p>{error}</p>}
+      <form onSubmit={handleSubmit}>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Enter your email"
+          required
+        />
+        <button type="submit">Send Magic Link</button>
+      </form>
+      {message && <p>{message}</p>}
     </div>
   );
 }

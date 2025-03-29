@@ -20,13 +20,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!email) return res.status(400).json({ error: "Email is required" });
 
   // Generate a JWT token (expires in 15 min)
-  const token = jwt.sign({ email }, process.env.JWT_SECRET as string, { expiresIn: "15m" });
+  const token = jwt.sign({ email }, process.env.JWT_SECRET as string, { expiresIn: "1d" });
   const hashedToken = bcrypt.hashSync(token, 10); // Hash the token
 
  // Store hashed token in MongoDB
  await db.collection("magic_links").updateOne(
   { email },
-  { $set: { hashedToken, expires: new Date(Date.now() + 15 * 60 * 1000) } },
+  { $set: { hashedToken, expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) } },
   { upsert: true }
 );
 
